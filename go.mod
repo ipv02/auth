@@ -3,6 +3,7 @@ module github.com/ipv02/auth
 go 1.23
 
 require (
+	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/fatih/color v1.17.0
 	google.golang.org/grpc v1.67.1
 	google.golang.org/protobuf v1.35.1
