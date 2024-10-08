@@ -7,7 +7,6 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 
 option  go_package = "github.com/ipv02/auth/grpc/pkg/user_v1;user_v1";
-// "/Users/pogiba-vishnevskii/Desktop/Develop/auth/grpc/pkg/user_v1;user_v1";
 
 
 service UserV1 {
