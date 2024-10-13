@@ -9,19 +9,19 @@ import "google/protobuf/wrappers.proto";
 option  go_package = "github.com/ipv02/auth/grpc/pkg/user_v1;user_v1";
 
 service UserV1 {
-  rpc Create(CreateRequest) returns (CreateResponse);
-  rpc Get(GetRequest) returns (GetResponse);
-  rpc Update(UpdateRequest) returns (google.protobuf.Empty);
-  rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+  rpc UpdateUser(UpdateUserRequest) returns (google.protobuf.Empty);
+  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty);
 }
 
 enum UserRole {
-  unknown = 0;
-  user = 1;
-  admin = 2;
+  UNKNOWN = 0;
+  USER = 1;
+  ADMIN = 2;
 }
 
-message CreateRequest {
+message CreateUserRequest {
   string name = 1;
   string email = 2;
   string password = 3;
@@ -29,15 +29,15 @@ message CreateRequest {
   UserRole role = 5;
 }
 
-message CreateResponse {
+message CreateUserResponse {
   int64 id = 1;
 }
 
-message GetRequest {
+message GetUserRequest {
   int64 id = 1;
 }
 
-message GetResponse {
+message GetUserResponse {
   int64 id = 1;
   string name = 2;
   string email = 3;
@@ -46,13 +46,12 @@ message GetResponse {
   google.protobuf.Timestamp updated_at = 6;
 }
 
-message UpdateRequest {
+message UpdateUserRequest {
   int64 id = 1;
   google.protobuf.StringValue name = 2;
-  google.protobuf.StringValue email = 3;
-  UserRole role = 4;
+  UserRole role = 3;
 }
 
-message DeleteRequest {
+message DeleteUserRequest {
   int64 id = 1;
 }
