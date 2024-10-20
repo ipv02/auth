@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"time"
 
-	"database/sql"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/brianvoe/gofakeit"
 	"github.com/ipv02/auth/pkg/user_v1"
