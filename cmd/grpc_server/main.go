@@ -90,7 +90,7 @@ func (s *server) CreateUser(ctx context.Context, req *user_v1.CreateUserRequest)
 	builderInsert := sq.Insert("auth").
 		PlaceholderFormat(sq.Dollar).
 		Columns("name", "email", "password", "password_confirm", "role").
-		Values(req.Name, req.Email, req.Password, req.PasswordConfirm, int(req.Role)).
+		Values(req.Name, req.Email, req.Password, req.PasswordConfirm, req.Role).
 		Suffix("RETURNING id")
 
 	query, args, err := builderInsert.ToSql()
