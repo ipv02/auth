@@ -63,7 +63,7 @@ func main() {
 
 	s := grpc.NewServer()
 	reflection.Register(s)
-	user_v1.RegisterUserV1Server(s, &server{})
+	user_v1.RegisterUserV1Server(s, &server{pool: pool})
 
 	log.Printf("server listening at %v", lis.Addr())
 
@@ -90,7 +90,7 @@ func (s *server) CreateUser(ctx context.Context, req *user_v1.CreateUserRequest)
 	builderInsert := sq.Insert("auth").
 		PlaceholderFormat(sq.Dollar).
 		Columns("name", "email", "password", "password_confirm", "role").
-		Values(req.Name, req.Email, req.Password, req.PasswordConfirm, int32(req.Role)).
+		Values(req.Name, req.Email, req.Password, req.PasswordConfirm, int(req.Role)).
 		Suffix("RETURNING id")
 
 	query, args, err := builderInsert.ToSql()
@@ -125,10 +125,10 @@ func (s *server) CreateUser(ctx context.Context, req *user_v1.CreateUserRequest)
 //   - *desc.GetUserResponse: Ответ с данными пользователя (ID, имя, email, роль, даты создания и обновления).
 //   - error: Возвращает ошибку в случае неудачи, или nil при успешном выполнении.
 func (s *server) GetUser(ctx context.Context, req *user_v1.GetUserRequest) (*user_v1.GetUserResponse, error) {
-	log.Printf("Auth id: %d", req.GetId())
+	log.Printf("Auth id: %d", req.Id)
 
 	builderSelect := sq.
-		Select("id", "name", "email", "password", "password_confirm", "role").
+		Select("id", "name", "email", "role", "created_at", "updated_at").
 		From("auth").
 		PlaceholderFormat(sq.Dollar).
 		Where(sq.Eq{"id": req.Id})
@@ -140,12 +140,11 @@ func (s *server) GetUser(ctx context.Context, req *user_v1.GetUserRequest) (*use
 	}
 
 	var (
-		id        int64
-		name      string
-		email     string
-		role      user_v1.UserRole
-		createdAt time.Time
-		updatedAt sql.NullTime
+		id          int64
+		name, email string
+		role        user_v1.UserRole
+		createdAt   time.Time
+		updatedAt   sql.NullTime
 	)
 
 	err = s.pool.QueryRow(ctx, query, args...).Scan(&id, &name, &email, &role, &createdAt, &updatedAt)
