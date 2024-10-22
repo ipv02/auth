@@ -10,14 +10,15 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/ipv02/auth/config"
-	"github.com/ipv02/auth/config/env"
-	"github.com/ipv02/auth/pkg/user_v1"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/ipv02/auth/config"
+	"github.com/ipv02/auth/config/env"
+	"github.com/ipv02/auth/pkg/user_v1"
 )
 
 var configPath string
@@ -72,18 +73,7 @@ func main() {
 	}
 }
 
-// CreateUser обрабатывает CreateUserRequest для создания нового пользователя.
-//
-// Логирует информацию о запросе (имя и email) и возвращает CreateUserResponse
-// с сгенерированным идентификатором пользователя.
-//
-// Параметры:
-//   - ctx: Контекст для управления временем жизни запроса и дедлайнами.
-//   - req: Запрос CreateUserRequest, содержащий данные пользователя (имя, email).
-//
-// Возвращает:
-//   - *desc.CreateUserResponse: Ответ с идентификатором созданного пользователя.
-//   - error: Возвращает ошибку в случае неудачи, или nil при успешном выполнении.
+// CreateUser - запрос создает нового пользователя.
 func (s *server) CreateUser(ctx context.Context, req *user_v1.CreateUserRequest) (*user_v1.CreateUserResponse, error) {
 	log.Printf("CreateRequest - Name: %s, Email: %s", req.GetName(), req.GetEmail())
 
@@ -112,18 +102,7 @@ func (s *server) CreateUser(ctx context.Context, req *user_v1.CreateUserRequest)
 	}, nil
 }
 
-// GetUser обрабатывает GetUserRequest для получения информации о пользователе по ID.
-//
-// Логирует идентификатор пользователя и возвращает GetUserResponse с данными,
-// такими как имя, email, роль, а также датами создания и обновления.
-//
-// Параметры:
-//   - ctx: Контекст для управления временем жизни запроса и дедлайнами.
-//   - req: Запрос GetUserRequest, содержащий идентификатор пользователя.
-//
-// Возвращает:
-//   - *desc.GetUserResponse: Ответ с данными пользователя (ID, имя, email, роль, даты создания и обновления).
-//   - error: Возвращает ошибку в случае неудачи, или nil при успешном выполнении.
+// GetUser запроолс получения информации о пользователе.
 func (s *server) GetUser(ctx context.Context, req *user_v1.GetUserRequest) (*user_v1.GetUserResponse, error) {
 	log.Printf("Auth id: %d", req.Id)
 
@@ -168,18 +147,7 @@ func (s *server) GetUser(ctx context.Context, req *user_v1.GetUserRequest) (*use
 	}, nil
 }
 
-// UpdateUser обрабатывает UpdateUserRequest для обновления данных пользователя.
-//
-// Логирует информацию о запросе (ID, имя, email) и возвращает пустой ответ
-// при успешном выполнении.
-//
-// Параметры:
-//   - ctx: Контекст для управления временем жизни запроса и дедлайнами.
-//   - req: Запрос UpdateUserRequest, содержащий ID пользователя и обновленные данные (имя, email).
-//
-// Возвращает:
-//   - *emptypb.Empty: Пустой ответ при успешном выполнении операции.
-//   - error: Возвращает ошибку в случае неудачи, или nil при успешном выполнении.
+// UpdateUser запрос на обновление данных о пользователе.
 func (s *server) UpdateUser(ctx context.Context, req *user_v1.UpdateUserRequest) (*emptypb.Empty, error) {
 	log.Printf("UpdateRequest - ID: %d, Name: %s, Email: %s", req.GetId(), req.GetName(), req.GetEmail())
 
@@ -219,18 +187,7 @@ func (s *server) UpdateUser(ctx context.Context, req *user_v1.UpdateUserRequest)
 	return &emptypb.Empty{}, nil
 }
 
-// DeleteUser обрабатывает DeleteUserRequest для удаления пользователя по ID.
-//
-// Логирует идентификатор удаляемого пользователя и возвращает пустой ответ
-// при успешном выполнении.
-//
-// Параметры:
-//   - ctx: Контекст для управления временем жизни запроса и дедлайнами.
-//   - req: Запрос DeleteUserRequest, содержащий ID пользователя для удаления.
-//
-// Возвращает:
-//   - *emptypb.Empty: Пустой ответ при успешном выполнении операции.
-//   - error: Возвращает ошибку в случае неудачи, или nil при успешном выполнении.
+// DeleteUser запрос на удаление пользователя.
 func (s *server) DeleteUser(ctx context.Context, req *user_v1.DeleteUserRequest) (*emptypb.Empty, error) {
 	log.Printf("Deleting object with ID: %d", req.GetId())
 

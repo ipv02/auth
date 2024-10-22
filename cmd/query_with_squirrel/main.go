@@ -8,8 +8,9 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/brianvoe/gofakeit"
-	"github.com/ipv02/auth/pkg/user_v1"
 	"github.com/jackc/pgx/v4/pgxpool"
+
+	"github.com/ipv02/auth/pkg/user_v1"
 )
 
 const dbDSN = "host=localhost port=54321 dbname=auth user=auth-user password=auth-password"
@@ -17,8 +18,11 @@ const dbDSN = "host=localhost port=54321 dbname=auth user=auth-user password=aut
 func main() {
 	ctx := context.Background()
 
+	dbCtx, dbCancel := context.WithTimeout(ctx, 3*time.Second)
+	defer dbCancel()
+
 	// Создаем пул соединений с базой данных
-	pool, err := pgxpool.Connect(ctx, dbDSN)
+	pool, err := pgxpool.Connect(dbCtx, dbDSN)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
