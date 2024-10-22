@@ -2,9 +2,8 @@ package env
 
 import (
 	"errors"
+	"github.com/ipv02/auth/internal/config"
 	"os"
-
-	"github.com/ipv02/auth/config"
 )
 
 var _ config.PGConfig = (*pgConfig)(nil)
