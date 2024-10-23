@@ -7,13 +7,11 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jackc/pgx/v4/pgxpool"
-	"google.golang.org/protobuf/types/known/emptypb"
-
+	"github.com/ipv02/auth/internal/model"
 	"github.com/ipv02/auth/internal/repository"
 	"github.com/ipv02/auth/internal/repository/user/converter"
-	"github.com/ipv02/auth/internal/repository/user/model"
-	"github.com/ipv02/auth/pkg/user_v1"
+	modelRepo "github.com/ipv02/auth/internal/repository/user/model"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 const (
@@ -37,17 +35,17 @@ func NewRepository(db *pgxpool.Pool) repository.UserRepository {
 	return &repo{db: db}
 }
 
-func (r *repo) CreateUser(ctx context.Context, req *user_v1.CreateUserRequest) (*user_v1.CreateUserResponse, error) {
+func (r *repo) CreateUser(ctx context.Context, user *model.UserCreate) (int64, error) {
 	builderInsert := sq.Insert(tableName).
 		PlaceholderFormat(sq.Dollar).
 		Columns(nameColumn, emailColumn, passwordColumn, passwordConfirmColumn, roleColumn).
-		Values(req.Name, req.Email, req.Password, req.PasswordConfirm, req.Role).
+		Values(user.Name, user.Email, user.Password, user.PasswordConfirm, user.Role).
 		Suffix("RETURNING id")
 
 	query, args, err := builderInsert.ToSql()
 	if err != nil {
 		log.Fatalf("failed to generate query: %v", err)
-		return nil, err
+		return 0, err
 	}
 
 	var userID int64
@@ -55,20 +53,18 @@ func (r *repo) CreateUser(ctx context.Context, req *user_v1.CreateUserRequest) (
 
 	if err != nil {
 		log.Fatalf("failed to execute query: %v", err)
-		return nil, err
+		return 0, err
 	}
 
-	return &user_v1.CreateUserResponse{
-		Id: userID,
-	}, nil
+	return userID, nil
 }
 
-func (r *repo) GetUser(ctx context.Context, req *user_v1.GetUserRequest) (*user_v1.GetUserResponse, error) {
+func (r *repo) GetUser(ctx context.Context, id int64) (*model.UserGet, error) {
 	builderSelect := sq.
 		Select(idColumn, nameColumn, emailColumn, roleColumn, createdAtColumn, updatedAtColumn).
 		From(tableName).
 		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{"id": req.Id})
+		Where(sq.Eq{idColumn: id})
 
 	query, args, err := builderSelect.ToSql()
 	if err != nil {
@@ -76,7 +72,7 @@ func (r *repo) GetUser(ctx context.Context, req *user_v1.GetUserRequest) (*user_
 		return nil, err
 	}
 
-	var user model.User
+	var user modelRepo.User
 	err = r.db.QueryRow(ctx, query, args...).Scan(&user.ID, &user.Name, &user.Email, &user.UserRole, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		log.Fatalf("failed to execute query: %v", err)
@@ -86,60 +82,56 @@ func (r *repo) GetUser(ctx context.Context, req *user_v1.GetUserRequest) (*user_
 	return converter.ToUserFromRepo(&user), nil
 }
 
-func (r *repo) UpdateUser(ctx context.Context, req *user_v1.UpdateUserRequest) (*emptypb.Empty, error) {
+func (r *repo) UpdateUser(ctx context.Context, user *model.UserUpdate) error {
 	builderUpdate := sq.
 		Update(tableName).
 		PlaceholderFormat(sq.Dollar).
-		Set(roleColumn, int(req.GetRole())).
+		Set(roleColumn, user.Role).
 		Set(updatedAtColumn, time.Now()).
-		Where(sq.Eq{"id": req.Id})
+		Where(sq.Eq{idColumn: user.ID})
 
-	if req.Name != nil {
-		trimmedName := strings.TrimSpace(req.Name.GetValue())
-		if len(trimmedName) > 0 {
-			builderUpdate.Set("name", trimmedName)
-		}
+	trimmedName := strings.TrimSpace(user.Name)
+	if len(trimmedName) > 0 {
+		builderUpdate.Set(nameColumn, trimmedName)
 	}
 
-	if req.Email != nil {
-		trimmedEmail := strings.TrimSpace(req.Email.GetValue())
-		if len(trimmedEmail) > 0 {
-			builderUpdate.Set("email", trimmedEmail)
-		}
+	trimmedEmail := strings.TrimSpace(user.Email)
+	if len(trimmedEmail) > 0 {
+		builderUpdate.Set(emailColumn, trimmedEmail)
 	}
 
 	query, args, err := builderUpdate.ToSql()
 	if err != nil {
 		log.Fatalf("failed to generate query: %v", err)
-		return nil, err
+		return err
 	}
 
 	_, err = r.db.Exec(ctx, query, args...)
 	if err != nil {
 		log.Fatalf("failed to execute query: %v", err)
-		return nil, err
+		return err
 	}
 
-	return &emptypb.Empty{}, nil
+	return err
 }
 
-func (r *repo) DeleteUser(ctx context.Context, req *user_v1.DeleteUserRequest) (*emptypb.Empty, error) {
+func (r *repo) DeleteUser(ctx context.Context, id int64) error {
 	builderDelete := sq.
 		Delete(tableName).
 		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{"id": req.Id})
+		Where(sq.Eq{idColumn: id})
 
 	query, args, err := builderDelete.ToSql()
 	if err != nil {
 		log.Fatalf("failed to generate query: %v", err)
-		return nil, err
+		return err
 	}
 
 	_, err = r.db.Exec(ctx, query, args...)
 	if err != nil {
 		log.Fatalf("failed to execute query: %v", err)
-		return nil, err
+		return err
 	}
 
-	return &emptypb.Empty{}, nil
+	return err
 }

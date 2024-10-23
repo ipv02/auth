@@ -13,8 +13,10 @@ import (
 
 	"github.com/ipv02/auth/internal/config"
 	"github.com/ipv02/auth/internal/config/env"
-	"github.com/ipv02/auth/internal/repository"
-	"github.com/ipv02/auth/internal/repository/user"
+	"github.com/ipv02/auth/internal/converter"
+	userRepository "github.com/ipv02/auth/internal/repository/user"
+	"github.com/ipv02/auth/internal/service"
+	userService "github.com/ipv02/auth/internal/service/user"
 	"github.com/ipv02/auth/pkg/user_v1"
 )
 
@@ -26,7 +28,7 @@ func init() {
 
 type server struct {
 	user_v1.UnimplementedUserV1Server
-	userRepository repository.UserRepository
+	userService service.UserService
 }
 
 func main() {
@@ -59,11 +61,12 @@ func main() {
 	}
 	defer pool.Close()
 
-	userRepo := user.NewRepository(pool)
+	userRepo := userRepository.NewRepository(pool)
+	userServ := userService.NewService(userRepo)
 
 	s := grpc.NewServer()
 	reflection.Register(s)
-	user_v1.RegisterUserV1Server(s, &server{userRepository: userRepo})
+	user_v1.RegisterUserV1Server(s, &server{userService: userServ})
 
 	log.Printf("server listening at %v", lis.Addr())
 
@@ -74,40 +77,33 @@ func main() {
 
 // CreateUser - запрос создает нового пользователя.
 func (s *server) CreateUser(ctx context.Context, req *user_v1.CreateUserRequest) (*user_v1.CreateUserResponse, error) {
-	userObj, err := s.userRepository.CreateUser(ctx, req)
+	id, err := s.userService.CreateUser(ctx, converter.ToUserCreateFromReq(req))
 	if err != nil {
 		return nil, err
 	}
 
-	log.Printf("created user: %v", userObj)
+	log.Printf("created user: %v", id)
 
 	return &user_v1.CreateUserResponse{
-		Id: userObj.Id,
+		Id: id,
 	}, nil
 }
 
 // GetUser запроолс получения информации о пользователе.
 func (s *server) GetUser(ctx context.Context, req *user_v1.GetUserRequest) (*user_v1.GetUserResponse, error) {
-	userObj, err := s.userRepository.GetUser(ctx, req)
+	userObj, err := s.userService.GetUser(ctx, req.GetId())
 	if err != nil {
 		return nil, err
 	}
 
 	log.Printf("get user: %v", userObj)
 
-	return &user_v1.GetUserResponse{
-		Id:        userObj.Id,
-		Name:      userObj.Name,
-		Email:     userObj.Email,
-		Role:      userObj.Role,
-		CreatedAt: userObj.CreatedAt,
-		UpdatedAt: userObj.UpdatedAt,
-	}, nil
+	return converter.ToUserFromService(userObj), nil
 }
 
 // UpdateUser запрос на обновление данных о пользователе.
 func (s *server) UpdateUser(ctx context.Context, req *user_v1.UpdateUserRequest) (*emptypb.Empty, error) {
-	_, err := s.userRepository.UpdateUser(ctx, req)
+	err := s.userService.UpdateUser(ctx, converter.ToUserUpdateFromReq(req))
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +115,7 @@ func (s *server) UpdateUser(ctx context.Context, req *user_v1.UpdateUserRequest)
 
 // DeleteUser запрос на удаление пользователя.
 func (s *server) DeleteUser(ctx context.Context, req *user_v1.DeleteUserRequest) (*emptypb.Empty, error) {
-	_, err := s.userRepository.DeleteUser(ctx, req)
+	err := s.userService.DeleteUser(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
