@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	"github.com/ipv02/auth/internal/model"
 )
 

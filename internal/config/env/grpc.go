@@ -2,9 +2,10 @@ package env
 
 import (
 	"errors"
-	"github.com/ipv02/auth/internal/config"
 	"net"
 	"os"
+
+	"github.com/ipv02/auth/internal/config"
 )
 
 var _ config.GRPCConfig = (*grpcConfig)(nil)
