@@ -7,6 +7,7 @@ import (
 	"github.com/ipv02/auth/pkg/user_v1"
 )
 
+// ToUserFromService конвертер модели бизнес-логики в протомодель
 func ToUserFromService(user *model.UserGet) *user_v1.GetUserResponse {
 	var updatedAt *timestamppb.Timestamp
 	if user.UpdatedAt.Valid {
@@ -23,6 +24,7 @@ func ToUserFromService(user *model.UserGet) *user_v1.GetUserResponse {
 	}
 }
 
+// ToUserCreateFromReq конвертер протомодели в модель бизнес-логики
 func ToUserCreateFromReq(user *user_v1.CreateUserRequest) *model.UserCreate {
 	return &model.UserCreate{
 		Name:            user.Name,
@@ -33,6 +35,7 @@ func ToUserCreateFromReq(user *user_v1.CreateUserRequest) *model.UserCreate {
 	}
 }
 
+// ToUserUpdateFromReq конвертер протомодели в модель бизнес-логики
 func ToUserUpdateFromReq(user *user_v1.UpdateUserRequest) *model.UserUpdate {
 	return &model.UserUpdate{
 		ID:    user.Id,

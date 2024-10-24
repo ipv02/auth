@@ -7,11 +7,12 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/jackc/pgx/v4/pgxpool"
+
 	"github.com/ipv02/auth/internal/model"
 	"github.com/ipv02/auth/internal/repository"
 	"github.com/ipv02/auth/internal/repository/user/converter"
 	modelRepo "github.com/ipv02/auth/internal/repository/user/model"
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 const (
@@ -31,6 +32,7 @@ type repo struct {
 	db *pgxpool.Pool
 }
 
+// NewRepository создает новый экземпляр UserRepository с подключением к базе данных
 func NewRepository(db *pgxpool.Pool) repository.UserRepository {
 	return &repo{db: db}
 }

@@ -9,6 +9,7 @@ type serv struct {
 	userRepository repository.UserRepository
 }
 
+// NewService конструктор для создания связи между сервисным слоем и репо слоем
 func NewService(userRepository repository.UserRepository) service.UserService {
 	return &serv{userRepository: userRepository}
 }

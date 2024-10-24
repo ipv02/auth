@@ -6,6 +6,7 @@ import (
 	"github.com/ipv02/auth/internal/model"
 )
 
+// UserService интерфейс описывающий сервисный слой
 type UserService interface {
 	CreateUser(ctx context.Context, user *model.UserCreate) (int64, error)
 	GetUser(ctx context.Context, id int64) (*model.UserGet, error)

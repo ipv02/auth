@@ -14,7 +14,6 @@ import (
 	"github.com/ipv02/auth/internal/config"
 	"github.com/ipv02/auth/internal/config/env"
 	userRepository "github.com/ipv02/auth/internal/repository/user"
-	"github.com/ipv02/auth/internal/service"
 	userService "github.com/ipv02/auth/internal/service/user"
 	"github.com/ipv02/auth/pkg/user_v1"
 )
@@ -23,11 +22,6 @@ var configPath string
 
 func init() {
 	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
-}
-
-type server struct {
-	user_v1.UnimplementedUserV1Server
-	userService service.UserService
 }
 
 func main() {
