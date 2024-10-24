@@ -5,7 +5,7 @@ import (
 	"github.com/ipv02/auth/pkg/user_v1"
 )
 
-// Implementation структура описавающая сервер
+// Implementation структура описывающая сервер
 type Implementation struct {
 	user_v1.UnimplementedUserV1Server
 	userService service.UserService
