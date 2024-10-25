@@ -7,8 +7,7 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jackc/pgx/v4/pgxpool"
-
+	"github.com/ipv02/auth/internal/client/db"
 	"github.com/ipv02/auth/internal/model"
 	"github.com/ipv02/auth/internal/repository"
 	"github.com/ipv02/auth/internal/repository/user/converter"
@@ -29,11 +28,11 @@ const (
 )
 
 type repo struct {
-	db *pgxpool.Pool
+	db db.Client
 }
 
 // NewRepository создает новый экземпляр UserRepository с подключением к базе данных
-func NewRepository(db *pgxpool.Pool) repository.UserRepository {
+func NewRepository(db db.Client) repository.UserRepository {
 	return &repo{db: db}
 }
 
@@ -50,8 +49,13 @@ func (r *repo) CreateUser(ctx context.Context, user *model.UserCreate) (int64, e
 		return 0, err
 	}
 
+	q := db.Query{
+		Name:     "user_repository.Create",
+		QueryRaw: query,
+	}
+
 	var userID int64
-	err = r.db.QueryRow(ctx, query, args...).Scan(&userID)
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&userID)
 
 	if err != nil {
 		log.Fatalf("failed to execute query: %v", err)
@@ -66,7 +70,8 @@ func (r *repo) GetUser(ctx context.Context, id int64) (*model.UserGet, error) {
 		Select(idColumn, nameColumn, emailColumn, roleColumn, createdAtColumn, updatedAtColumn).
 		From(tableName).
 		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{idColumn: id})
+		Where(sq.Eq{idColumn: id}).
+		Limit(1)
 
 	query, args, err := builderSelect.ToSql()
 	if err != nil {
@@ -74,8 +79,13 @@ func (r *repo) GetUser(ctx context.Context, id int64) (*model.UserGet, error) {
 		return nil, err
 	}
 
+	q := db.Query{
+		Name:     "user_repository.Get",
+		QueryRaw: query,
+	}
+
 	var user modelRepo.User
-	err = r.db.QueryRow(ctx, query, args...).Scan(&user.ID, &user.Name, &user.Email, &user.UserRole, &user.CreatedAt, &user.UpdatedAt)
+	err = r.db.DB().ScanOneContext(ctx, &user, q, args...)
 	if err != nil {
 		log.Fatalf("failed to execute query: %v", err)
 		return nil, err
@@ -108,7 +118,12 @@ func (r *repo) UpdateUser(ctx context.Context, user *model.UserUpdate) error {
 		return err
 	}
 
-	_, err = r.db.Exec(ctx, query, args...)
+	q := db.Query{
+		Name:     "user_repository.Update",
+		QueryRaw: query,
+	}
+
+	_, err = r.db.DB().ExecContext(ctx, q, args...)
 	if err != nil {
 		log.Fatalf("failed to execute query: %v", err)
 		return err
@@ -129,7 +144,12 @@ func (r *repo) DeleteUser(ctx context.Context, id int64) error {
 		return err
 	}
 
-	_, err = r.db.Exec(ctx, query, args...)
+	q := db.Query{
+		Name:     "user_repository.Delete",
+		QueryRaw: query,
+	}
+
+	_, err = r.db.DB().ExecContext(ctx, q, args...)
 	if err != nil {
 		log.Fatalf("failed to execute query: %v", err)
 		return err
