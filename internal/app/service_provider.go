@@ -34,6 +34,7 @@ func newServiceProvider() *serviceProvider {
 	return &serviceProvider{}
 }
 
+// PgConfig представляет конфигурацию для подключения к базе данных
 func (s *serviceProvider) PgConfig() config.PGConfig {
 	if s.pgConfig == nil {
 		cfg, err := env.NewPGConfig()
@@ -47,6 +48,7 @@ func (s *serviceProvider) PgConfig() config.PGConfig {
 	return s.pgConfig
 }
 
+// GRPCConfig представляет конфигурацию для подключения к gRPC серверу
 func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 	if s.grpcConfig == nil {
 		cfg, err := env.NewGRPCConfig()
@@ -60,6 +62,7 @@ func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 	return s.grpcConfig
 }
 
+// DBClient клиент для работы с базой данных
 func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	if s.dbClient == nil {
 		cl, err := pg.New(ctx, s.PgConfig().DSN())
@@ -80,7 +83,8 @@ func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	return s.dbClient
 }
 
-func (s *serviceProvider) TxManage(ctx context.Context) db.TxManager {
+// TxManager возвращает экземпляр менеджера транзакций
+func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 	if s.txManager == nil {
 		s.txManager = transaction.NewTransactionManager(s.DBClient(ctx).DB())
 	}
@@ -88,6 +92,7 @@ func (s *serviceProvider) TxManage(ctx context.Context) db.TxManager {
 	return s.txManager
 }
 
+// UserRepository возвращает экземпляр репозитория
 func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
 	if s.userRepository == nil {
 		s.userRepository = userRepository.NewRepository(s.DBClient(ctx))
@@ -96,14 +101,16 @@ func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRep
 	return s.userRepository
 }
 
+// UserService возвращает экземпляр сервиса
 func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
 	if s.userService == nil {
-		s.userService = userService.NewService(s.UserRepository(ctx), s.TxManage(ctx))
+		s.userService = userService.NewService(s.UserRepository(ctx), s.TxManager(ctx))
 	}
 
 	return s.userService
 }
 
+// UserImpl возвращает экземпляр имплементации
 func (s *serviceProvider) UserImpl(ctx context.Context) *user.Implementation {
 	if s.userImpl == nil {
 		s.userImpl = user.NewImplementation(s.UserService(ctx))
