@@ -2,6 +2,7 @@ package user_v1
 
 import (
 	"fmt"
+
 	"github.com/pkg/errors"
 )
 
