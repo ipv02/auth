@@ -1,8 +1,6 @@
 package user_v1
 
 import (
-	"fmt"
-
 	"github.com/pkg/errors"
 )
 
@@ -22,7 +20,6 @@ func (req *CreateUserRequest) Validate() error {
 
 // Validate валидация UpdateUserRequest
 func (req *UpdateUserRequest) Validate() error {
-	fmt.Println("--- ROLE", req.Role)
 	if req.Role == UserRole_UNKNOWN {
 		return errors.New("role is unknown")
 	}
