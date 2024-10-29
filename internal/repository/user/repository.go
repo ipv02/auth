@@ -7,6 +7,7 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
+
 	"github.com/ipv02/auth/internal/client/db"
 	"github.com/ipv02/auth/internal/model"
 	"github.com/ipv02/auth/internal/repository"
@@ -36,11 +37,12 @@ func NewRepository(db db.Client) repository.UserRepository {
 	return &repo{db: db}
 }
 
+// CreateUser выполняет создание нового пользователя в базе данных
 func (r *repo) CreateUser(ctx context.Context, user *model.UserCreate) (int64, error) {
 	builderInsert := sq.Insert(tableName).
-		PlaceholderFormat(sq.Dollar).
 		Columns(nameColumn, emailColumn, passwordColumn, passwordConfirmColumn, roleColumn).
 		Values(user.Name, user.Email, user.Password, user.PasswordConfirm, user.Role).
+		PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING id")
 
 	query, args, err := builderInsert.ToSql()
@@ -65,12 +67,13 @@ func (r *repo) CreateUser(ctx context.Context, user *model.UserCreate) (int64, e
 	return userID, nil
 }
 
+// GetUser функция берет пользоваиеля из базы данных
 func (r *repo) GetUser(ctx context.Context, id int64) (*model.UserGet, error) {
 	builderSelect := sq.
 		Select(idColumn, nameColumn, emailColumn, roleColumn, createdAtColumn, updatedAtColumn).
 		From(tableName).
-		PlaceholderFormat(sq.Dollar).
 		Where(sq.Eq{idColumn: id}).
+		PlaceholderFormat(sq.Dollar).
 		Limit(1)
 
 	query, args, err := builderSelect.ToSql()
@@ -102,13 +105,13 @@ func (r *repo) UpdateUser(ctx context.Context, user *model.UserUpdate) error {
 		Set(updatedAtColumn, time.Now()).
 		Where(sq.Eq{idColumn: user.ID})
 
-	trimmedName := strings.TrimSpace(user.Name)
-	if len(trimmedName) > 0 {
+	if user.Name != nil {
+		trimmedName := strings.TrimSpace(*user.Name)
 		builderUpdate.Set(nameColumn, trimmedName)
 	}
 
-	trimmedEmail := strings.TrimSpace(user.Email)
-	if len(trimmedEmail) > 0 {
+	if user.Email != nil {
+		trimmedEmail := strings.TrimSpace(*user.Email)
 		builderUpdate.Set(emailColumn, trimmedEmail)
 	}
 
@@ -132,11 +135,12 @@ func (r *repo) UpdateUser(ctx context.Context, user *model.UserUpdate) error {
 	return err
 }
 
+// DeleteUser удаляет пользователя из базы данных
 func (r *repo) DeleteUser(ctx context.Context, id int64) error {
 	builderDelete := sq.
 		Delete(tableName).
-		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{idColumn: id})
+		Where(sq.Eq{idColumn: id}).
+		PlaceholderFormat(sq.Dollar)
 
 	query, args, err := builderDelete.ToSql()
 	if err != nil {

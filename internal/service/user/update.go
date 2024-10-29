@@ -6,7 +6,8 @@ import (
 	"github.com/ipv02/auth/internal/model"
 )
 
-func (s *serv) UpdateUser(ctx context.Context, user *model.UserUpdate) error {
+// UpdateUser запрос сервесного слоя на обновление данных о пользователе
+func (s *service) UpdateUser(ctx context.Context, user *model.UserUpdate) error {
 	err := s.userRepository.UpdateUser(ctx, user)
 
 	return err

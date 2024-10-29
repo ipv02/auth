@@ -1,6 +1,8 @@
 package converter
 
 import (
+	"log"
+
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/ipv02/auth/internal/model"
@@ -9,6 +11,11 @@ import (
 
 // ToUserFromService конвертер модели бизнес-логики в протомодель
 func ToUserFromService(user *model.UserGet) *user_v1.GetUserResponse {
+	if user == nil {
+		log.Println("ToUserFromService: nil user, returning nil response")
+		return nil
+	}
+
 	var updatedAt *timestamppb.Timestamp
 	if user.UpdatedAt.Valid {
 		updatedAt = timestamppb.New(user.UpdatedAt.Time)
@@ -26,6 +33,11 @@ func ToUserFromService(user *model.UserGet) *user_v1.GetUserResponse {
 
 // ToUserCreateFromReq конвертер протомодели в модель бизнес-логики
 func ToUserCreateFromReq(user *user_v1.CreateUserRequest) *model.UserCreate {
+	if user == nil {
+		log.Println("ToUserCreateFromReq: nil user, returning nil response")
+		return nil
+	}
+
 	return &model.UserCreate{
 		Name:            user.Name,
 		Email:           user.Email,
@@ -37,10 +49,18 @@ func ToUserCreateFromReq(user *user_v1.CreateUserRequest) *model.UserCreate {
 
 // ToUserUpdateFromReq конвертер протомодели в модель бизнес-логики
 func ToUserUpdateFromReq(user *user_v1.UpdateUserRequest) *model.UserUpdate {
+	if user == nil {
+		log.Println("ToUserUpdateFromReq: nil user, returning nil response")
+		return nil
+	}
+
+	name := user.Name.GetValue()
+	email := user.Email.GetValue()
+
 	return &model.UserUpdate{
 		ID:    user.Id,
-		Name:  user.Name.GetValue(),
-		Email: user.Email.GetValue(),
+		Name:  &name,
+		Email: &email,
 		Role:  int32(user.Role),
 	}
 }
