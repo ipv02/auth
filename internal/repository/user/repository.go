@@ -97,13 +97,14 @@ func (r *repo) GetUser(ctx context.Context, id int64) (*model.UserGet, error) {
 	return converter.ToUserFromRepo(&user), nil
 }
 
+// UpdateUser выполняет обновление данных пользователя в базе
 func (r *repo) UpdateUser(ctx context.Context, user *model.UserUpdate) error {
 	builderUpdate := sq.
 		Update(tableName).
-		PlaceholderFormat(sq.Dollar).
 		Set(roleColumn, user.Role).
 		Set(updatedAtColumn, time.Now()).
-		Where(sq.Eq{idColumn: user.ID})
+		Where(sq.Eq{idColumn: user.ID}).
+		PlaceholderFormat(sq.Dollar)
 
 	if user.Name != nil {
 		trimmedName := strings.TrimSpace(*user.Name)
