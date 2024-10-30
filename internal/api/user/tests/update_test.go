@@ -46,8 +46,8 @@ func TestUpdate(t *testing.T) {
 
 		serviceReq = &model.UserUpdate{
 			ID:    id,
-			Name:  name,
-			Email: email,
+			Name:  &name,
+			Email: &email,
 			Role:  role,
 		}
 
