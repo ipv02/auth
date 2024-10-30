@@ -4,7 +4,7 @@ import (
 	"errors"
 	"os"
 
-	"github.com/ipv02/auth/config"
+	"github.com/ipv02/auth/internal/config"
 )
 
 var _ config.PGConfig = (*pgConfig)(nil)

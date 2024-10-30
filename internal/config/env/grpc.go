@@ -5,7 +5,7 @@ import (
 	"net"
 	"os"
 
-	"github.com/ipv02/auth/config"
+	"github.com/ipv02/auth/internal/config"
 )
 
 var _ config.GRPCConfig = (*grpcConfig)(nil)
