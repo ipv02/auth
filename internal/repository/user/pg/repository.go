@@ -1,4 +1,4 @@
-package user
+package pg
 
 import (
 	"context"
@@ -11,8 +11,8 @@ import (
 	"github.com/ipv02/auth/internal/client/db"
 	"github.com/ipv02/auth/internal/model"
 	"github.com/ipv02/auth/internal/repository"
-	"github.com/ipv02/auth/internal/repository/user/converter"
-	modelRepo "github.com/ipv02/auth/internal/repository/user/model"
+	"github.com/ipv02/auth/internal/repository/user/pg/converter"
+	modelRepo "github.com/ipv02/auth/internal/repository/user/pg/model"
 )
 
 const (
