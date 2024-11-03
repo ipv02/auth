@@ -84,7 +84,7 @@ func (c *client) HGetAll(ctx context.Context, key string) ([]interface{}, error)
 // Get получает значение по ключу из redis
 func (c *client) Get(ctx context.Context, key string) (interface{}, error) {
 	var value interface{}
-	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+	err := c.execute(ctx, func(_ context.Context, conn redis.Conn) error {
 		var errEx error
 		value, errEx = conn.Do("GET", key)
 		if errEx != nil {
@@ -102,7 +102,7 @@ func (c *client) Get(ctx context.Context, key string) (interface{}, error) {
 
 // Expire устанавливает время жизни (TTL) для ключа в redis.
 func (c *client) Expire(ctx context.Context, key string, expiration time.Duration) error {
-	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+	err := c.execute(ctx, func(_ context.Context, conn redis.Conn) error {
 		_, err := conn.Do("EXPIRE", key, int(expiration.Seconds()))
 		if err != nil {
 			return err
@@ -119,7 +119,7 @@ func (c *client) Expire(ctx context.Context, key string, expiration time.Duratio
 
 // Ping проверяет доступность redis
 func (c *client) Ping(ctx context.Context) error {
-	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+	err := c.execute(ctx, func(_ context.Context, conn redis.Conn) error {
 		_, err := conn.Do("PING")
 		if err != nil {
 			return err
@@ -173,7 +173,7 @@ func (c *client) getConnect(ctx context.Context) (redis.Conn, error) {
 
 // Delete удаляет ключ из redis
 func (c *client) Delete(ctx context.Context, key string) error {
-	return c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+	return c.execute(ctx, func(_ context.Context, conn redis.Conn) error {
 		_, err := conn.Do("DEL", key)
 		return err
 	})
