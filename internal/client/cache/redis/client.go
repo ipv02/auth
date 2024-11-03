@@ -30,7 +30,7 @@ func NewClient(pool *redis.Pool, config config.RedisConfig) *client {
 
 // HashSet сохраняет несколько значений в Redis-хеш, ассоциированных с указанным ключом
 func (c *client) HashSet(ctx context.Context, key string, values interface{}) error {
-	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+	err := c.execute(ctx, func(_ context.Context, conn redis.Conn) error {
 		_, err := conn.Do("HSET", redis.Args{key}.AddFlat(values)...)
 		if err != nil {
 			return err
@@ -47,7 +47,7 @@ func (c *client) HashSet(ctx context.Context, key string, values interface{}) er
 
 // Set устанавливает одиночное значение по ключу в redis
 func (c *client) Set(ctx context.Context, key string, value interface{}) error {
-	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+	err := c.execute(ctx, func(_ context.Context, conn redis.Conn) error {
 		_, err := conn.Do("SET", redis.Args{key}.Add(value)...)
 		if err != nil {
 			return err
@@ -65,7 +65,7 @@ func (c *client) Set(ctx context.Context, key string, value interface{}) error {
 // HGetAll получает все поля и значения из redis-хеша по указанному ключу
 func (c *client) HGetAll(ctx context.Context, key string) ([]interface{}, error) {
 	var values []interface{}
-	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+	err := c.execute(ctx, func(_ context.Context, conn redis.Conn) error {
 		var errEx error
 		values, errEx = redis.Values(conn.Do("HGETALL", key))
 		if errEx != nil {
