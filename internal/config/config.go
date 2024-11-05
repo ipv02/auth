@@ -21,6 +21,11 @@ type GRPCConfig interface {
 	Address() string
 }
 
+// HTTPConfig представляет конфигурацию для подключения к http серверу.
+type HTTPConfig interface {
+	Address() string
+}
+
 // PGConfig представляет конфигурацию для подключения к базе данных PostgreSQL.
 type PGConfig interface {
 	DSN() string

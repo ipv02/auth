@@ -5,14 +5,33 @@ package user_v1;
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
+import "google/api/annotations.proto";
 
 option  go_package = "github.com/ipv02/auth/pkg/user_v1;user_v1";
 
 service UserV1 {
-  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
-  rpc GetUser(GetUserRequest) returns (GetUserResponse);
-  rpc UpdateUser(UpdateUserRequest) returns (google.protobuf.Empty);
-  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty);
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse){
+    option (google.api.http) = {
+      post: "/user/v1/create"
+      body: "*"
+    };
+  }
+  rpc GetUser(GetUserRequest) returns (GetUserResponse){
+    option (google.api.http) = {
+      get: "/user/v1"
+    };
+  }
+  rpc UpdateUser(UpdateUserRequest) returns (google.protobuf.Empty){
+    option (google.api.http) = {
+      patch: "/user/v1"
+      body: "*"
+    };
+  }
+  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty){
+    option (google.api.http) = {
+      delete: "/user/v1"
+    };
+  }
 }
 
 enum UserRole {
