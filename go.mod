@@ -5,6 +5,7 @@ go 1.23
 require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
+	github.com/envoyproxy/protoc-gen-validate v1.1.0
 	github.com/georgysavva/scany v1.2.2
 	github.com/gojuno/minimock/v3 v3.4.1
 	github.com/gomodule/redigo v1.9.2

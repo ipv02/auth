@@ -6,6 +6,7 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 import "google/api/annotations.proto";
+import "validate/validate.proto";
 
 option  go_package = "github.com/ipv02/auth/pkg/user_v1;user_v1";
 
@@ -41,10 +42,10 @@ enum UserRole {
 }
 
 message CreateUserRequest {
-  string name = 1;
-  string email = 2;
-  string password = 3;
-  string password_confirm = 4;
+  string name = 1 [(validate.rules).string = {min_len: 3, max_len: 10}];
+  string email = 2 [(validate.rules).string = {email: true}];
+  string password = 3 [(validate.rules).string = {min_len: 5, max_len: 20}];
+  string password_confirm = 4 [(validate.rules).string = {min_len: 5, max_len: 20}];
   UserRole role = 5;
 }
 

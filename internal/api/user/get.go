@@ -10,7 +10,7 @@ import (
 
 // GetUser запроолс получения информации о пользователе.
 func (i *Implementation) GetUser(ctx context.Context, req *user_v1.GetUserRequest) (*user_v1.GetUserResponse, error) {
-	if err := req.Validate(); err != nil {
+	if err := req.ValidateRequest(); err != nil {
 		return nil, err
 	}
 
