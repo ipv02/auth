@@ -17,13 +17,17 @@ install-deps:
 	GOBIN=$(LOCAL_BIN) go install github.com/gojuno/minimock/v3/cmd/minimock@v3.4.1
 	GOBIN=$(LOCAL_BIN) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.20.0
 	GOBIN=$(LOCAL_BIN) go install github.com/envoyproxy/protoc-gen-validate@v1.0.4
+	GOBIN=$(LOCAL_BIN) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v2.20.0
+	GOBIN=$(LOCAL_BIN) go install github.com/rakyll/statik@v0.1.7
 
 get-deps:
 	go get -u google.golang.org/protobuf/cmd/protoc-gen-go
 	go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
 
 generate:
+	mkdir -p pkg/swagger
 	make generate-user-api
+	$(LOCAL_BIN)/statik -src=pkg/swagger/ -include='*.css,*.html,*.js,*.json,*.png'
 
 generate-user-api:
 	mkdir -p pkg/user_v1
@@ -36,6 +40,8 @@ generate-user-api:
     --plugin=protoc-gen-grpc-gateway=bin/protoc-gen-grpc-gateway \
     --validate_out lang=go:pkg/user_v1 --validate_opt=paths=source_relative \
     --plugin=protoc-gen-validate=bin/protoc-gen-validate \
+	--openapiv2_out=allow_merge=true,merge_file_name=api:pkg/swagger \
+	--plugin=protoc-gen-openapiv2=bin/protoc-gen-openapiv2 \
 	api/user_v1/user.proto
 
 build:
@@ -83,4 +89,10 @@ vendor-proto:
 			git clone https://github.com/envoyproxy/protoc-gen-validate vendor.protogen/protoc-gen-validate &&\
 			mv vendor.protogen/protoc-gen-validate/validate/*.proto vendor.protogen/validate &&\
 			rm -rf vendor.protogen/protoc-gen-validate ;\
+		fi
+		@if [ ! -d vendor.protogen/protoc-gen-openapiv2 ]; then \
+			mkdir -p vendor.protogen/protoc-gen-openapiv2/options &&\
+			git clone https://github.com/grpc-ecosystem/grpc-gateway vendor.protogen/openapiv2 &&\
+			mv vendor.protogen/openapiv2/protoc-gen-openapiv2/options/*.proto vendor.protogen/protoc-gen-openapiv2/options &&\
+			rm -rf vendor.protogen/openapiv2 ;\
 		fi

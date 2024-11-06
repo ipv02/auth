@@ -26,6 +26,11 @@ type HTTPConfig interface {
 	Address() string
 }
 
+// SwaggerConfig представляет конфигурацию для подключения к swagger серверу.
+type SwaggerConfig interface {
+	Address() string
+}
+
 // PGConfig представляет конфигурацию для подключения к базе данных PostgreSQL.
 type PGConfig interface {
 	DSN() string
