@@ -4,7 +4,11 @@ import (
 	"context"
 	"log"
 
+	redigo "github.com/gomodule/redigo/redis"
+
 	"github.com/ipv02/auth/internal/api/user"
+	"github.com/ipv02/auth/internal/client/cache"
+	"github.com/ipv02/auth/internal/client/cache/redis"
 	"github.com/ipv02/auth/internal/client/db"
 	"github.com/ipv02/auth/internal/client/db/pg"
 	"github.com/ipv02/auth/internal/client/db/transaction"
@@ -12,17 +16,24 @@ import (
 	"github.com/ipv02/auth/internal/config"
 	"github.com/ipv02/auth/internal/config/env"
 	"github.com/ipv02/auth/internal/repository"
-	userRepository "github.com/ipv02/auth/internal/repository/user"
+	userRepository "github.com/ipv02/auth/internal/repository/user/pg"
+	userRepositoryRedis "github.com/ipv02/auth/internal/repository/user/redis"
 	"github.com/ipv02/auth/internal/service"
 	userService "github.com/ipv02/auth/internal/service/user"
 )
 
 type serviceProvider struct {
-	pgConfig   config.PGConfig
-	grpcConfig config.GRPCConfig
+	pgConfig      config.PGConfig
+	grpcConfig    config.GRPCConfig
+	redisConfig   config.RedisConfig
+	storageConfig config.StorageConfig
 
-	dbClient       db.Client
-	txManager      db.TxManager
+	dbClient  db.Client
+	txManager db.TxManager
+
+	redisPool   *redigo.Pool
+	redisClient cache.RedisClient
+
 	userRepository repository.UserRepository
 
 	userService service.UserService
@@ -62,6 +73,32 @@ func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 	return s.grpcConfig
 }
 
+func (s *serviceProvider) RedisConfig() config.RedisConfig {
+	if s.redisConfig == nil {
+		cfg, err := env.NewRedisConfig()
+		if err != nil {
+			log.Fatalf("failed to get redis config: %s", err.Error())
+		}
+
+		s.redisConfig = cfg
+	}
+
+	return s.redisConfig
+}
+
+func (s *serviceProvider) StorageConfig() config.StorageConfig {
+	if s.storageConfig == nil {
+		cfg, err := env.NewStorageConfig()
+		if err != nil {
+			log.Fatalf("failed to get storage config: %s", err.Error())
+		}
+
+		s.storageConfig = cfg
+	}
+
+	return s.storageConfig
+}
+
 // DBClient клиент для работы с базой данных
 func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	if s.dbClient == nil {
@@ -92,10 +129,38 @@ func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 	return s.txManager
 }
 
+func (s *serviceProvider) RedisPool() *redigo.Pool {
+	if s.redisPool == nil {
+		s.redisPool = &redigo.Pool{
+			MaxIdle:     s.RedisConfig().MaxIdle(),
+			IdleTimeout: s.RedisConfig().IdleTimeout(),
+			DialContext: func(ctx context.Context) (redigo.Conn, error) {
+				return redigo.DialContext(ctx, "tcp", s.RedisConfig().Address())
+			},
+		}
+	}
+
+	return s.redisPool
+}
+
+func (s *serviceProvider) RedisClient() cache.RedisClient {
+	if s.redisClient == nil {
+		s.redisClient = redis.NewClient(s.RedisPool(), s.RedisConfig())
+	}
+
+	return s.redisClient
+}
+
 // UserRepository возвращает экземпляр репозитория
 func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
 	if s.userRepository == nil {
-		s.userRepository = userRepository.NewRepository(s.DBClient(ctx))
+		if s.StorageConfig().Mode() == "redis" {
+			s.userRepository = userRepositoryRedis.NewRepository(s.RedisClient())
+		}
+
+		if s.StorageConfig().Mode() == "pg" {
+			s.userRepository = userRepository.NewRepository(s.DBClient(ctx))
+		}
 	}
 
 	return s.userRepository
