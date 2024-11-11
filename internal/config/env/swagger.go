@@ -1,11 +1,12 @@
 package env
 
 import (
-	"github.com/ipv02/auth/internal/config"
 	"net"
 	"os"
 
 	"github.com/pkg/errors"
+
+	"github.com/ipv02/auth/internal/config"
 )
 
 var _ config.SwaggerConfig = (*httpConfig)(nil)
@@ -20,6 +21,7 @@ type swaggerConfig struct {
 	port string
 }
 
+// NewSwaggerConfig создает новую конфигурацию для поднятия свагера
 func NewSwaggerConfig() (*swaggerConfig, error) {
 	host := os.Getenv(swaggerHostEnvName)
 	if len(host) == 0 {

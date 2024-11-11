@@ -3,6 +3,7 @@ package config
 import (
 	"time"
 
+	"github.com/IBM/sarama"
 	"github.com/joho/godotenv"
 )
 
@@ -47,4 +48,11 @@ type RedisConfig interface {
 // StorageConfig предназначен для конфигурации хранилища
 type StorageConfig interface {
 	Mode() string
+}
+
+// KafkaConsumerConfig представляет конфигурацию работы кафки
+type KafkaConsumerConfig interface {
+	Brokers() []string
+	GroupID() string
+	Config() *sarama.Config
 }

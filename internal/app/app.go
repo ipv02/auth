@@ -6,7 +6,10 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -45,13 +48,15 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 }
 
 // Run запускает gRPC сервер и гарантирует закрытие всех ресурсов при завершении работы
-func (a *App) Run() error {
+func (a *App) Run(ctx context.Context) error {
 	defer func() {
 		closer.CloseAll()
 		closer.Wait()
 	}()
 
-	wg := sync.WaitGroup{}
+	ctx, cancel := context.WithCancel(ctx)
+
+	wg := &sync.WaitGroup{}
 	wg.Add(2)
 
 	go func() {
@@ -81,7 +86,15 @@ func (a *App) Run() error {
 		}
 	}()
 
-	wg.Wait()
+	go func() {
+		defer wg.Done()
+		err := a.serviceProvider.UserSaverConsumer(ctx).RunConsumer(ctx)
+		if err != nil {
+			log.Printf("failed to run consumer: %s", err.Error())
+		}
+	}()
+
+	gracefulShutdown(ctx, cancel, wg)
 	return nil
 }
 
@@ -159,7 +172,7 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 	return nil
 }
 
-func (a *App) initSwaggerServer(ctx context.Context) error {
+func (a *App) initSwaggerServer(_ context.Context) error {
 	statikFS, err := fs.New()
 	if err != nil {
 		return err
@@ -170,8 +183,9 @@ func (a *App) initSwaggerServer(ctx context.Context) error {
 	mux.HandleFunc("/api.swagger.json", serveSwaggerFile("/api.swagger.json"))
 
 	a.swaggerServer = &http.Server{
-		Addr:    a.serviceProvider.SwaggerConfig().Address(),
-		Handler: mux,
+		Addr:              a.serviceProvider.SwaggerConfig().Address(),
+		Handler:           mux,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
 	return nil
@@ -232,7 +246,12 @@ func serveSwaggerFile(path string) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		defer file.Close()
+
+		defer func() {
+			if err := file.Close(); err != nil {
+				log.Println("Error closing file:", err)
+			}
+		}()
 
 		log.Printf("Read swagger file: %s", path)
 
@@ -253,4 +272,24 @@ func serveSwaggerFile(path string) http.HandlerFunc {
 
 		log.Printf("Served swagger file: %s", path)
 	}
+}
+
+func gracefulShutdown(ctx context.Context, cancel context.CancelFunc, wg *sync.WaitGroup) {
+	select {
+	case <-ctx.Done():
+		log.Println("terminating: context cancelled")
+	case <-waitSignal():
+		log.Println("terminating: via signal")
+	}
+
+	cancel()
+	if wg != nil {
+		wg.Wait()
+	}
+}
+
+func waitSignal() chan os.Signal {
+	sigterm := make(chan os.Signal, 1)
+	signal.Notify(sigterm, syscall.SIGINT, syscall.SIGTERM)
+	return sigterm
 }
