@@ -23,9 +23,8 @@ import (
 	"github.com/ipv02/auth/internal/config"
 	"github.com/ipv02/auth/internal/interceptor"
 	desc "github.com/ipv02/auth/pkg/user_v1"
-
 	// statik используется для инициализации статических ресурсов
-	_ "github.com/ipv02/auth/statik"
+	// _ "github.com/ipv02/auth/statik"
 )
 
 // App представляет приложение с конфигурационным файлом, провайдером и сервером
