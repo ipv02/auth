@@ -23,7 +23,6 @@ import (
 	"github.com/ipv02/auth/internal/config"
 	"github.com/ipv02/auth/internal/interceptor"
 	"github.com/ipv02/auth/pkg/user_v1"
-	_ "github.com/ipv02/auth/statik"
 )
 
 // App представляет приложение с конфигурационным файлом, провайдером и сервером

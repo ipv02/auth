@@ -10,10 +10,6 @@ import (
 
 // CreateUser - запрос создает нового пользователя.
 func (i *Implementation) CreateUser(ctx context.Context, req *user_v1.CreateUserRequest) (*user_v1.CreateUserResponse, error) {
-	if err := req.Validate(); err != nil {
-		return nil, err
-	}
-
 	id, err := i.userService.CreateUser(ctx, converter.ToUserCreateFromReq(req))
 	if err != nil {
 		return nil, err
