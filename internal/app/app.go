@@ -22,7 +22,10 @@ import (
 	"github.com/ipv02/auth/internal/closer"
 	"github.com/ipv02/auth/internal/config"
 	"github.com/ipv02/auth/internal/interceptor"
-	"github.com/ipv02/auth/pkg/user_v1"
+	desc "github.com/ipv02/auth/pkg/user_v1"
+
+	// Пакет statik используется для инициализации статических ресурсов
+	_ "github.com/ipv02/auth/statik"
 )
 
 // App представляет приложение с конфигурационным файлом, провайдером и сервером
@@ -138,7 +141,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 
 	reflection.Register(a.grpcServer)
 
-	user_v1.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserImpl(ctx))
+	desc.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserImpl(ctx))
 
 	return nil
 }
@@ -150,7 +153,7 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	err := user_v1.RegisterUserV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GRPCConfig().Address(), opts)
+	err := desc.RegisterUserV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GRPCConfig().Address(), opts)
 	if err != nil {
 		return err
 	}
