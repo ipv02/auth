@@ -24,7 +24,7 @@ import (
 	"github.com/ipv02/auth/internal/interceptor"
 	desc "github.com/ipv02/auth/pkg/user_v1"
 
-	// Пакет statik используется для инициализации статических ресурсов
+	// statik используется для инициализации статических ресурсов
 	_ "github.com/ipv02/auth/statik"
 )
 
