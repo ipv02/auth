@@ -3,6 +3,7 @@ package config
 import (
 	"time"
 
+	"github.com/IBM/sarama"
 	"github.com/joho/godotenv"
 )
 
@@ -18,6 +19,16 @@ func Load(path string) error {
 
 // GRPCConfig представляет конфигурацию для подключения к gRPC серверу.
 type GRPCConfig interface {
+	Address() string
+}
+
+// HTTPConfig представляет конфигурацию для подключения к http серверу.
+type HTTPConfig interface {
+	Address() string
+}
+
+// SwaggerConfig представляет конфигурацию для подключения к swagger серверу.
+type SwaggerConfig interface {
 	Address() string
 }
 
@@ -37,4 +48,11 @@ type RedisConfig interface {
 // StorageConfig предназначен для конфигурации хранилища
 type StorageConfig interface {
 	Mode() string
+}
+
+// KafkaConsumerConfig представляет конфигурацию работы кафки
+type KafkaConsumerConfig interface {
+	Brokers() []string
+	GroupID() string
+	Config() *sarama.Config
 }

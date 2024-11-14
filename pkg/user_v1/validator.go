@@ -4,8 +4,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Validate валидация CreateUserRequest
-func (req *CreateUserRequest) Validate() error {
+// ValidateRequest валидация CreateUserRequest
+func (req *CreateUserRequest) ValidateRequest() error {
 	if req.Name == "" {
 		return errors.New("name is required")
 	}
@@ -18,8 +18,8 @@ func (req *CreateUserRequest) Validate() error {
 	return nil
 }
 
-// Validate валидация UpdateUserRequest
-func (req *UpdateUserRequest) Validate() error {
+// ValidateRequest валидация UpdateUserRequest
+func (req *UpdateUserRequest) ValidateRequest() error {
 	if req.Role == UserRole_UNKNOWN {
 		return errors.New("role is unknown")
 	}
@@ -27,16 +27,16 @@ func (req *UpdateUserRequest) Validate() error {
 	return nil
 }
 
-// Validate валидация DeleteUserRequest
-func (req *DeleteUserRequest) Validate() error {
+// ValidateRequest валидация DeleteUserRequest
+func (req *DeleteUserRequest) ValidateRequest() error {
 	if req.Id == 0 {
 		return errors.New("id is required")
 	}
 	return nil
 }
 
-// Validate валидация GetUserRequest
-func (req *GetUserRequest) Validate() error {
+// ValidateRequest валидация GetUserRequest
+func (req *GetUserRequest) ValidateRequest() error {
 	if req.Id == 0 {
 		return errors.New("id is required")
 	}
