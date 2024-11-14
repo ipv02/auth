@@ -86,6 +86,7 @@ func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 	return s.grpcConfig
 }
 
+// HTTPConfig представляет конфигурацию для подключения к http серверу
 func (s *serviceProvider) HTTPConfig() config.HTTPConfig {
 	if s.httpConfig == nil {
 		cfg, err := env.NewHTTPConfig()
@@ -99,6 +100,7 @@ func (s *serviceProvider) HTTPConfig() config.HTTPConfig {
 	return s.httpConfig
 }
 
+// SwaggerConfig представляет конфигурацию для подключения к swgger серверу
 func (s *serviceProvider) SwaggerConfig() config.SwaggerConfig {
 	if s.swaggerConfig == nil {
 		cfg, err := env.NewSwaggerConfig()
@@ -112,6 +114,7 @@ func (s *serviceProvider) SwaggerConfig() config.SwaggerConfig {
 	return s.swaggerConfig
 }
 
+// RedisConfig представляет конфигурацию для подключения к redis
 func (s *serviceProvider) RedisConfig() config.RedisConfig {
 	if s.redisConfig == nil {
 		cfg, err := env.NewRedisConfig()
@@ -125,6 +128,7 @@ func (s *serviceProvider) RedisConfig() config.RedisConfig {
 	return s.redisConfig
 }
 
+// StorageConfig представляет конфигурацию для подключения к storage
 func (s *serviceProvider) StorageConfig() config.StorageConfig {
 	if s.storageConfig == nil {
 		cfg, err := env.NewStorageConfig()
@@ -138,6 +142,7 @@ func (s *serviceProvider) StorageConfig() config.StorageConfig {
 	return s.storageConfig
 }
 
+// KafkaConsumerConfig представляет конфигурацию для подключения к kafka
 func (s *serviceProvider) KafkaConsumerConfig() config.KafkaConsumerConfig {
 	if s.kafkaConsumerConfig == nil {
 		cfg, err := env.NewKafkaConsumerConfig()
@@ -181,6 +186,7 @@ func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 	return s.txManager
 }
 
+// RedisPool возвращает экземпляр пула редиса
 func (s *serviceProvider) RedisPool() *redigo.Pool {
 	if s.redisPool == nil {
 		s.redisPool = &redigo.Pool{
@@ -195,6 +201,7 @@ func (s *serviceProvider) RedisPool() *redigo.Pool {
 	return s.redisPool
 }
 
+// RedisClient возвращает экземпляр клиента редиса
 func (s *serviceProvider) RedisClient() cache.RedisClient {
 	if s.redisClient == nil {
 		s.redisClient = redis.NewClient(s.RedisPool(), s.RedisConfig())
@@ -236,6 +243,7 @@ func (s *serviceProvider) UserImpl(ctx context.Context) *user.Implementation {
 	return s.userImpl
 }
 
+// UserSaverConsumer возвращает экземпляр consumerService
 func (s *serviceProvider) UserSaverConsumer(ctx context.Context) service.ConsumerService {
 	if s.userSaverConsumer == nil {
 		s.userSaverConsumer = userSaverConsumer.NewService(
@@ -247,6 +255,7 @@ func (s *serviceProvider) UserSaverConsumer(ctx context.Context) service.Consume
 	return s.userSaverConsumer
 }
 
+// Consumer создает consumer
 func (s *serviceProvider) Consumer() kafka.Consumer {
 	if s.consumer == nil {
 		s.consumer = kafkaConsumer.NewConsumer(
@@ -259,6 +268,7 @@ func (s *serviceProvider) Consumer() kafka.Consumer {
 	return s.consumer
 }
 
+// ConsumerGroup создает consumerGroup
 func (s *serviceProvider) ConsumerGroup() sarama.ConsumerGroup {
 	if s.consumerGroup == nil {
 		consumerGroup, err := sarama.NewConsumerGroup(
@@ -276,6 +286,7 @@ func (s *serviceProvider) ConsumerGroup() sarama.ConsumerGroup {
 	return s.consumerGroup
 }
 
+// ConsumerGroupHandler создает consumerGroupHandler
 func (s *serviceProvider) ConsumerGroupHandler() *kafkaConsumer.GroupHandler {
 	if s.consumerGroupHandler == nil {
 		s.consumerGroupHandler = kafkaConsumer.NewGroupHandler()
